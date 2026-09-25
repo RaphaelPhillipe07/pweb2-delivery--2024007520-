@@ -13,14 +13,16 @@ export class EntregasRepository {
   }
 
   findAtivaDuplicada(descricao, origem, destino) {
-    return this.database.entregas.find(
-      (e) =>
-        e.descricao === descricao &&
-        e.origem === origem &&
-        e.destino === destino &&
-        e.status !== 'ENTREGUE' &&
-        e.status !== 'CANCELADA'
-    ) || null;
+    return (
+      this.database.entregas.find(
+        (e) =>
+          e.descricao === descricao &&
+          e.origem === origem &&
+          e.destino === destino &&
+          e.status !== 'ENTREGUE' &&
+          e.status !== 'CANCELADA'
+      ) || null
+    );
   }
 
   create(dados) {

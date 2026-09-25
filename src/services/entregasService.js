@@ -6,8 +6,9 @@ export class ServiceError extends Error {
 }
 
 export class EntregasService {
-  constructor(repository) {
+  constructor(repository, motoristasRepository) {
     this.repository = repository;
+    this.motoristasRepository = motoristasRepository;
   }
 
   listar(filtroStatus) {
@@ -105,5 +106,37 @@ export class EntregasService {
   obterHistorico(id) {
     const entrega = this.buscarPorId(id);
     return entrega.historico;
+  }
+
+  atribuir(id, motoristaId) {
+    const entrega = this.buscarPorId(id);
+
+    if (entrega.status !== 'CRIADA') {
+      throw new ServiceError(422, `Não é possível atribuir motorista para entrega com status ${entrega.status}`);
+    }
+
+    if (!motoristaId) {
+      throw new ServiceError(400, 'motoristaId é obrigatório');
+    }
+
+    const numMotoristaId = Number(motoristaId);
+    const motorista = this.motoristasRepository ? this.motoristasRepository.findById(numMotoristaId) : null;
+    if (!motorista) {
+      throw new ServiceError(404, 'Motorista não encontrado');
+    }
+
+    if (motorista.status !== 'ATIVO') {
+      throw new ServiceError(422, 'Motorista inativo');
+    }
+
+    const novoHistorico = [
+      ...entrega.historico,
+      { data: new Date().toISOString(), descricao: `Motorista ${motorista.nome} atribuído` }
+    ];
+
+    return this.repository.update(id, {
+      motoristaId: numMotoristaId,
+      historico: novoHistorico
+    });
   }
 }
