@@ -1,54 +1,105 @@
-# Delivery Tracker — Exercício do Capítulo 4
+# Delivery Tracker API — Cap. 4
 
-> **Programação Web II — IFAL/Maceió.** Este é o **projeto do semestre** (avaliado). No Cap. 4 você
-> inicia a **Delivery Tracker API** com **arquitetura em camadas** e, depois, **Repository Pattern +
-> injeção de dependência**. A correção é **automática** (autograder de conformidade) + arquitetura.
+API em camadas para rastreamento do ciclo de vida de encomendas, desenvolvida para a disciplina de **Programação Web II — IFAL Maceió**.
 
-## Como usar este repositório
+## Como Executar
 
-1. Clique em **"Use this template"** e crie **`pweb2-delivery-<matricula>`** (ex.: `pweb2-delivery-20231012345`).
-   Este é o repositório que você usará o **semestre inteiro** (evolui a cada capítulo).
-2. Clone, instale e rode:
-   ```bash
-   npm install
-   npm start                                        # http://localhost:3000
-   # em outro terminal — autograder:
-   npm run check                                    # = BASE_URL=http://localhost:3000 node autograder/check.mjs
-   ```
-3. A cada `git push`, o **GitHub Actions** roda o autograder e mostra a nota na aba **Actions**
-   (resumo do job). O `autograder/check.mjs` é **aberto** — leia para saber exatamente o que se espera.
+### 1. Instalar as dependências
 
-## O que implementar (em `src/`)
-
-```
-src/
-├── controllers/   # traduz HTTP ↔ service (sem regra de negócio)
-├── services/      # TODA a regra de negócio
-├── repositories/  # só acesso a dados
-├── database/      # persistência SIMULADA em memória (sem banco real, sem ORM)
-├── routes/        # composição das dependências (injeção) + monta em /api
-└── utils/
+```bash
+npm install
 ```
 
-- **Regra de negócio só no Service.** Injeção de dependência no **composition root** (`src/routes`).
-- O `server.js` só configura o app (já traz o `GET /api/health` exigido — não remova).
+### 2. Iniciar o servidor
 
-## Duas etapas (ver os enunciados completos)
+```bash
+npm start
+```
 
-- **Atividade 05 — Entregas em camadas:** CRUD de `/api/entregas`, ciclo de status
-  (`CRIADA → EM_TRANSITO → ENTREGUE`/`CANCELADA`), histórico. Meta: checagens de **Entregas** verdes.
-- **Atividade 06 — Motoristas + Contratos + DI:** `/api/motoristas`, atribuição de motorista,
-  contratos de repository (JSDoc) e composição num ponto único. Meta: **122/122**.
+A aplicação será executada, por padrão, em:
 
-> O critério de **inversão de dependência** é verificado pelo professor **trocando o repository por
-> um Mock** que respeita o contrato — programe contra o contrato desde o início.
+```text
+http://localhost:3000
+```
 
-## Contrato (resumo)
+### 3. Executar o Autograder
 
-- Base `/api` · JSON · erro `{ "erro": "..." }` · `GET /api/health` → `{ "status": "ok" }`.
-- Status: `201` criar · `400` entrada inválida · `404` não encontrado · `409` unicidade
-  (duplicata/CPF) · `422` regra de estado (transição/atribuição inválida).
-- Execução: `npm start`, respeita `process.env.PORT`, branch `main`.
+Com o servidor em execução, utilize:
 
-Faça **um commit por avanço** (Conventional Commits, ex.: `feat(entregas): valida origem ≠ destino`).
-Bom trabalho! 🚀
+```bash
+BASE_URL=http://localhost:3000 node autograder/check.mjs
+```
+
+---
+
+## Exemplos de Requisições
+
+As requisições abaixo utilizam **cURL**.
+
+### Health Check
+
+Verifica se a API está disponível:
+
+```bash
+curl -X GET http://localhost:3000/api/health
+```
+
+### Criar Entrega
+
+Cria uma nova entrega informando descrição, origem e destino:
+
+```bash
+curl -X POST http://localhost:3000/api/entregas \
+  -H "Content-Type: application/json" \
+  -d '{
+    "descricao": "Televisao",
+    "origem": "Maceió",
+    "destino": "Arapiraca"
+  }'
+```
+
+### Listar Entregas
+
+Lista todas as entregas:
+
+```bash
+curl -X GET http://localhost:3000/api/entregas
+```
+
+Também é possível filtrar as entregas por status:
+
+```bash
+curl -X GET "http://localhost:3000/api/entregas?status=CRIADA"
+```
+
+### Buscar Entrega por ID
+
+Consulta uma entrega específica pelo seu ID:
+
+```bash
+curl -X GET http://localhost:3000/api/entregas/1
+```
+
+### Avançar Status da Entrega
+
+Avança a entrega para o próximo status do ciclo de vida:
+
+```bash
+curl -X PATCH http://localhost:3000/api/entregas/1/avancar
+```
+
+### Cancelar Entrega
+
+Cancela uma entrega:
+
+```bash
+curl -X PATCH http://localhost:3000/api/entregas/1/cancelar
+```
+
+### Consultar Histórico de Eventos
+
+Consulta o histórico de eventos de uma entrega:
+
+```bash
+curl -X GET http://localhost:3000/api/entregas/1/historico
+```
