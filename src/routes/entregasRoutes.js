@@ -9,7 +9,6 @@ export function criarEntregasRouter(entregasController) {
   router.patch('/:id/avancar', entregasController.avancar);
   router.patch('/:id/cancelar', entregasController.cancelar);
   router.get('/:id/historico', entregasController.obterHistorico);
-  router.patch('/:id/atribuir', entregasController.atribuir);
 
   return router;
 }
