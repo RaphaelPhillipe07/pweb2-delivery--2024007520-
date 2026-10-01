@@ -12,15 +12,14 @@ export class EntregasService {
   }
 
   listar(filtroStatus) {
-    const entregas = this.repository.findAll();
     if (filtroStatus) {
-      return entregas.filter((e) => e.status === filtroStatus);
+      return this.repository.listarTodos({ status: filtroStatus });
     }
-    return entregas;
+    return this.repository.listarTodos();
   }
 
   buscarPorId(id) {
-    const entrega = this.repository.findById(id);
+    const entrega = this.repository.buscarPorId(id);
     if (!entrega) {
       throw new ServiceError(404, 'Entrega não encontrada');
     }
@@ -36,12 +35,21 @@ export class EntregasService {
       throw new ServiceError(400, 'Origem e destino não podem ser iguais');
     }
 
-    const duplicada = this.repository.findAtivaDuplicada(descricao, origem, destino);
+    const duplicada = this.repository
+      .listarTodos()
+      .find((e) =>
+        e.descricao === descricao &&
+        e.origem === origem &&
+        e.destino === destino &&
+        e.status !== 'ENTREGUE' &&
+        e.status !== 'CANCELADA'
+      );
+
     if (duplicada) {
       throw new ServiceError(409, 'Já existe uma entrega ativa idêntica em andamento');
     }
 
-    const novaEntrega = this.repository.create({
+    const novaEntrega = this.repository.criar({
       descricao,
       origem,
       destino,
@@ -79,7 +87,7 @@ export class EntregasService {
       { data: new Date().toISOString(), descricao: descricaoEvento }
     ];
 
-    return this.repository.update(id, {
+    return this.repository.atualizar(id, {
       status: proximoStatus,
       historico: novoHistorico
     });
@@ -97,7 +105,7 @@ export class EntregasService {
       { data: new Date().toISOString(), descricao: 'Entrega cancelada' }
     ];
 
-    return this.repository.update(id, {
+    return this.repository.atualizar(id, {
       status: 'CANCELADA',
       historico: novoHistorico
     });
@@ -120,7 +128,7 @@ export class EntregasService {
     }
 
     const numMotoristaId = Number(motoristaId);
-    const motorista = this.motoristasRepository ? this.motoristasRepository.findById(numMotoristaId) : null;
+    const motorista = this.motoristasRepository ? this.motoristasRepository.buscarPorId(numMotoristaId) : null;
     if (!motorista) {
       throw new ServiceError(404, 'Motorista não encontrado');
     }
@@ -134,7 +142,7 @@ export class EntregasService {
       { data: new Date().toISOString(), descricao: `Motorista ${motorista.nome} atribuído` }
     ];
 
-    return this.repository.update(id, {
+    return this.repository.atualizar(id, {
       motoristaId: numMotoristaId,
       historico: novoHistorico
     });

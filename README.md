@@ -103,3 +103,94 @@ Consulta o histórico de eventos de uma entrega:
 ```bash
 curl -X GET http://localhost:3000/api/entregas/1/historico
 ```
+
+### Criar Motorista
+
+Cria um novo motorista informando nome e CPF:
+
+```bash
+curl -X POST http://localhost:3000/api/motoristas \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "João",
+    "cpf": "123.456.789-00"
+  }'
+```
+
+### Listar Motoristas
+
+Lista todos os motoristas cadastrados:
+
+```bash
+curl -X GET http://localhost:3000/api/motoristas
+```
+
+### Buscar Motorista por ID
+
+Consulta um motorista específico pelo seu ID:
+
+```bash
+curl -X GET http://localhost:3000/api/motoristas/1
+```
+
+### Listar Entregas de um Motorista
+
+Lista apenas as entregas atribuídas a um motorista:
+
+```bash
+curl -X GET http://localhost:3000/api/motoristas/1/entregas
+```
+
+Também é possível combinar com o filtro por status:
+
+```bash
+curl -X GET "http://localhost:3000/api/motoristas/1/entregas?status=CRIADA"
+```
+
+### Atribuir Motorista a Entrega
+
+Atribui um motorista a uma entrega com status `CRIADA`:
+
+```bash
+curl -X PATCH http://localhost:3000/api/entregas/1/atribuir \
+  -H "Content-Type: application/json" \
+  -d '{ "motoristaId": 1 }'
+```
+
+---
+
+## Contratos de Repository
+
+```text
+IEntregasRepository
+  listarTodos(filtros?) → Entrega[]
+  buscarPorId(id)       → Entrega | null
+  criar(dados)          → Entrega
+  atualizar(id, dados)  → Entrega
+
+IMotoristasRepository
+  listarTodos()         → Motorista[]
+  buscarPorId(id)       → Motorista | null
+  buscarPorCpf(cpf)     → Motorista | null
+  criar(dados)          → Motorista
+```
+
+---
+
+## Composição de Dependências
+
+A injeção de dependências acontece em um único ponto (`src/routes/index.js`):
+
+```text
+server.js
+  └── app (express)
+        ├── GET /api/health
+        └── /api → criarRotas()                      ← composition root (src/routes/index.js)
+              ├── new Database()
+              ├── new EntregasRepository(database)
+              ├── new MotoristasRepository(database)
+              ├── new EntregasService(entregasRepository, motoristasRepository)
+              ├── new MotoristasService(motoristasRepository, entregasRepository)
+              ├── new EntregasController(entregasService)      → /api/entregas
+              └── new MotoristasController(motoristasService)  → /api/motoristas
+```
