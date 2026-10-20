@@ -1,6 +1,8 @@
-# Delivery Tracker API — Cap. 4
+# Delivery Tracker API — Atividade 07 (Prisma + SQLite)
 
 API em camadas para rastreamento do ciclo de vida de encomendas, desenvolvida para a disciplina de **Programação Web II — IFAL Maceió**.
+
+Persistência real com **Prisma ORM** sobre **SQLite**: entregas e motoristas agora sobrevivem a reinícios do servidor, sem mudar o contrato da API.
 
 ## Como Executar
 
@@ -10,7 +12,28 @@ API em camadas para rastreamento do ciclo de vida de encomendas, desenvolvida pa
 npm install
 ```
 
-### 2. Iniciar o servidor
+### 2. Configurar o banco
+
+```bash
+cp .env.example .env
+```
+
+O `.env` define a conexão (SQLite):
+
+```text
+DATABASE_URL="file:./dev.db"
+```
+
+### 3. Aplicar as migrations
+
+```bash
+npx prisma migrate dev
+```
+
+Isso cria o banco `prisma/dev.db` e aplica as migrations versionadas de `prisma/migrations/`.
+Em um ambiente já migrado (como o CI), use `npx prisma migrate deploy`.
+
+### 4. Iniciar o servidor
 
 ```bash
 npm start
@@ -22,12 +45,20 @@ A aplicação será executada, por padrão, em:
 http://localhost:3000
 ```
 
-### 3. Executar o Autograder
+O servidor respeita `process.env.PORT`.
 
-Com o servidor em execução, utilize:
+### 5. Executar o Autograder
+
+Com o servidor em execução:
 
 ```bash
 BASE_URL=http://localhost:3000 node autograder/check.mjs
+```
+
+### Inspecionar os dados
+
+```bash
+npx prisma studio
 ```
 
 ---
@@ -38,15 +69,11 @@ As requisições abaixo utilizam **cURL**.
 
 ### Health Check
 
-Verifica se a API está disponível:
-
 ```bash
 curl -X GET http://localhost:3000/api/health
 ```
 
 ### Criar Entrega
-
-Cria uma nova entrega informando descrição, origem e destino:
 
 ```bash
 curl -X POST http://localhost:3000/api/entregas \
@@ -60,13 +87,11 @@ curl -X POST http://localhost:3000/api/entregas \
 
 ### Listar Entregas
 
-Lista todas as entregas:
-
 ```bash
 curl -X GET http://localhost:3000/api/entregas
 ```
 
-Também é possível filtrar as entregas por status:
+Também é possível filtrar por status:
 
 ```bash
 curl -X GET "http://localhost:3000/api/entregas?status=CRIADA"
@@ -74,15 +99,11 @@ curl -X GET "http://localhost:3000/api/entregas?status=CRIADA"
 
 ### Buscar Entrega por ID
 
-Consulta uma entrega específica pelo seu ID:
-
 ```bash
 curl -X GET http://localhost:3000/api/entregas/1
 ```
 
 ### Avançar Status da Entrega
-
-Avança a entrega para o próximo status do ciclo de vida:
 
 ```bash
 curl -X PATCH http://localhost:3000/api/entregas/1/avancar
@@ -90,23 +111,17 @@ curl -X PATCH http://localhost:3000/api/entregas/1/avancar
 
 ### Cancelar Entrega
 
-Cancela uma entrega:
-
 ```bash
 curl -X PATCH http://localhost:3000/api/entregas/1/cancelar
 ```
 
 ### Consultar Histórico de Eventos
 
-Consulta o histórico de eventos de uma entrega:
-
 ```bash
 curl -X GET http://localhost:3000/api/entregas/1/historico
 ```
 
 ### Criar Motorista
-
-Cria um novo motorista informando nome e CPF:
 
 ```bash
 curl -X POST http://localhost:3000/api/motoristas \
@@ -119,23 +134,17 @@ curl -X POST http://localhost:3000/api/motoristas \
 
 ### Listar Motoristas
 
-Lista todos os motoristas cadastrados:
-
 ```bash
 curl -X GET http://localhost:3000/api/motoristas
 ```
 
 ### Buscar Motorista por ID
 
-Consulta um motorista específico pelo seu ID:
-
 ```bash
 curl -X GET http://localhost:3000/api/motoristas/1
 ```
 
 ### Listar Entregas de um Motorista
-
-Lista apenas as entregas atribuídas a um motorista:
 
 ```bash
 curl -X GET http://localhost:3000/api/motoristas/1/entregas
@@ -149,8 +158,6 @@ curl -X GET "http://localhost:3000/api/motoristas/1/entregas?status=CRIADA"
 
 ### Atribuir Motorista a Entrega
 
-Atribui um motorista a uma entrega com status `CRIADA`:
-
 ```bash
 curl -X PATCH http://localhost:3000/api/entregas/1/atribuir \
   -H "Content-Type: application/json" \
@@ -159,38 +166,4 @@ curl -X PATCH http://localhost:3000/api/entregas/1/atribuir \
 
 ---
 
-## Contratos de Repository
-
-```text
-IEntregasRepository
-  listarTodos(filtros?) → Entrega[]
-  buscarPorId(id)       → Entrega | null
-  criar(dados)          → Entrega
-  atualizar(id, dados)  → Entrega
-
-IMotoristasRepository
-  listarTodos()         → Motorista[]
-  buscarPorId(id)       → Motorista | null
-  buscarPorCpf(cpf)     → Motorista | null
-  criar(dados)          → Motorista
-```
-
----
-
-## Composição de Dependências
-
-A injeção de dependências acontece em um único ponto (`src/routes/index.js`):
-
-```text
-server.js
-  └── app (express)
-        ├── GET /api/health
-        └── /api → criarRotas()                      ← composition root (src/routes/index.js)
-              ├── new Database()
-              ├── new EntregasRepository(database)
-              ├── new MotoristasRepository(database)
-              ├── new EntregasService(entregasRepository, motoristasRepository)
-              ├── new MotoristasService(motoristasRepository, entregasRepository)
-              ├── new EntregasController(entregasService)      → /api/entregas
-              └── new MotoristasController(motoristasService)  → /api/motoristas
 ```

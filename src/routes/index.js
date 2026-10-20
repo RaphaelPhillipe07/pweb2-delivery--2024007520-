@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { Database } from '../database/database.js';
-import { EntregasRepository } from '../repositories/entregasRepository.js';
-import { MotoristasRepository } from '../repositories/motoristasRepository.js';
+import { EntregasRepositoryPrisma } from '../repositories/entregasRepository.prisma.js';
+import { MotoristasRepositoryPrisma } from '../repositories/motoristasRepository.prisma.js';
 import { EntregasService } from '../services/entregasService.js';
 import { MotoristasService } from '../services/motoristasService.js';
 import { EntregasController } from '../controllers/entregasController.js';
@@ -9,11 +8,9 @@ import { MotoristasController } from '../controllers/motoristasController.js';
 import { criarEntregasRouter } from './entregasRoutes.js';
 import { criarMotoristasRouter } from './motoristasRoutes.js';
 
-export function criarRotas(dbInstance) {
-  const db = dbInstance || new Database();
-
-  const entregasRepository = new EntregasRepository(db);
-  const motoristasRepository = new MotoristasRepository(db);
+export function criarRotas() {
+  const entregasRepository = new EntregasRepositoryPrisma();
+  const motoristasRepository = new MotoristasRepositoryPrisma();
 
   const entregasService = new EntregasService(entregasRepository, motoristasRepository);
   const motoristasService = new MotoristasService(motoristasRepository, entregasRepository);
