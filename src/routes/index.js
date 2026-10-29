@@ -15,10 +15,11 @@ export function criarRotas() {
   const entregasService = new EntregasService(entregasRepository, motoristasRepository);
   const motoristasService = new MotoristasService(motoristasRepository, entregasRepository);
 
-  const entregasController = new EntregasController(entregasService);
+  const entregasController = new EntregasController(entregasService, motoristasService);
   const motoristasController = new MotoristasController(motoristasService);
 
   const router = Router();
+  router.get('/', (req, res) => res.redirect('/entregas'));
   router.use('/entregas', criarEntregasRouter(entregasController));
   router.use('/motoristas', criarMotoristasRouter(motoristasController));
 

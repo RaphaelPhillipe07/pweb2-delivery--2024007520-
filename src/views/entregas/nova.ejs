@@ -1,0 +1,27 @@
+<p class="caminho"><a href="/entregas">← Voltar para entregas</a></p>
+
+<h1>Nova Entrega</h1>
+
+<%- include('../partials/erros', { erros: erros }) %>
+
+<form class="formulario" method="POST" action="/entregas">
+  <div class="campo">
+    <label for="descricao">Descrição</label>
+    <input type="text" id="descricao" name="descricao" value="<%= dados.descricao %>" maxlength="200" required autofocus>
+  </div>
+
+  <div class="campo">
+    <label for="origem">Origem</label>
+    <input type="text" id="origem" name="origem" value="<%= dados.origem %>" maxlength="120" required>
+  </div>
+
+  <div class="campo">
+    <label for="destino">Destino</label>
+    <input type="text" id="destino" name="destino" value="<%= dados.destino %>" maxlength="120" required>
+  </div>
+
+  <div class="form-acoes">
+    <button class="botao botao-primario" type="submit">Criar entrega</button>
+    <a class="botao" href="/entregas">Cancelar</a>
+  </div>
+</form>

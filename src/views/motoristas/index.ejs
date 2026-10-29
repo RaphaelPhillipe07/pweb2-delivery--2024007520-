@@ -1,0 +1,31 @@
+<section class="pagina-topo">
+  <h1>Motoristas</h1>
+  <a class="botao botao-primario" href="/motoristas/novo">Novo Motorista</a>
+</section>
+
+<% if (motoristas.length) { %>
+  <div class="tabela-container">
+    <table class="tabela tabela-motoristas">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>CPF</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% motoristas.forEach(function (motorista) { %>
+          <tr>
+            <td>#<%= motorista.id %></td>
+            <td><%= motorista.nome %></td>
+            <td><%= motorista.cpf %></td>
+            <td><span class="badge badge-<%= motorista.status.toLowerCase() %>"><%= motorista.status %></span></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } else { %>
+  <p class="vazio">Nenhum motorista cadastrado.</p>
+<% } %>

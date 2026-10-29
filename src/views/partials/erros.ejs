@@ -1,0 +1,10 @@
+<% if (typeof erros !== 'undefined' && erros.length) { %>
+  <div class="alerta alerta-erro" role="alert">
+    <p class="alerta-titulo">Corrija os campos abaixo:</p>
+    <ul>
+      <% erros.forEach(function (mensagem) { %>
+        <li><%= mensagem %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>

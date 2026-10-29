@@ -1,0 +1,68 @@
+<section class="pagina-topo">
+  <h1>Entregas</h1>
+  <a class="botao botao-primario" href="/entregas/nova">Nova Entrega</a>
+</section>
+
+<form class="filtro" method="GET" action="/entregas">
+  <label for="status">Filtrar por status</label>
+  <select id="status" name="status">
+    <option value="">Todos</option>
+    <% statusDisponiveis.forEach(function (status) { %>
+      <option value="<%= status %>" <%= filtroStatus === status ? 'selected' : '' %>><%= status %></option>
+    <% }) %>
+  </select>
+  <button class="botao" type="submit">Filtrar</button>
+</form>
+
+<% if (entregas.length) { %>
+  <div class="tabela-container">
+    <table class="tabela tabela-entregas">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Descrição</th>
+          <th>Origem</th>
+          <th>Destino</th>
+          <th>Status</th>
+          <th>Motorista</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% entregas.forEach(function (entrega) { %>
+          <tr>
+            <td>#<%= entrega.id %></td>
+            <td><a href="/entregas/<%= entrega.id %>"><%= entrega.descricao %></a></td>
+            <td><%= entrega.origem %></td>
+            <td><%= entrega.destino %></td>
+            <td><span class="badge badge-<%= entrega.status.toLowerCase() %>"><%= entrega.status %></span></td>
+            <td>
+              <% if (entrega.motoristaId) { %>
+                <%= motoristasPorId[entrega.motoristaId] ? motoristasPorId[entrega.motoristaId].nome : '#' + entrega.motoristaId %>
+              <% } else { %>
+                —
+              <% } %>
+            </td>
+            <td class="acoes-tabela">
+              <a class="botao botao-pequeno" href="/entregas/<%= entrega.id %>">Detalhes</a>
+              <% if (entrega.status === 'CRIADA' || entrega.status === 'EM_TRANSITO') { %>
+                <form method="POST" action="/entregas/<%= entrega.id %>/avancar?_method=PATCH">
+                  <input type="hidden" name="_method" value="PATCH">
+                  <button class="botao botao-pequeno" type="submit">Avançar</button>
+                </form>
+              <% } %>
+              <% if (entrega.status !== 'ENTREGUE' && entrega.status !== 'CANCELADA') { %>
+                <form method="POST" action="/entregas/<%= entrega.id %>/cancelar?_method=PATCH">
+                  <input type="hidden" name="_method" value="PATCH">
+                  <button class="botao botao-pequeno botao-perigo" type="submit">Cancelar</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } else { %>
+  <p class="vazio">Nenhuma entrega encontrada.</p>
+<% } %>

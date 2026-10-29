@@ -1,0 +1,83 @@
+<p class="caminho"><a href="/entregas">← Voltar para entregas</a></p>
+
+<section class="pagina-topo">
+  <h1>Entrega #<%= entrega.id %></h1>
+  <span class="badge badge-<%= entrega.status.toLowerCase() %>"><%= entrega.status %></span>
+</section>
+
+<dl class="detalhes">
+  <div>
+    <dt>Descrição</dt>
+    <dd><%= entrega.descricao %></dd>
+  </div>
+  <div>
+    <dt>Origem</dt>
+    <dd><%= entrega.origem %></dd>
+  </div>
+  <div>
+    <dt>Destino</dt>
+    <dd><%= entrega.destino %></dd>
+  </div>
+  <div>
+    <dt>Status</dt>
+    <dd><%= entrega.status %></dd>
+  </div>
+  <div>
+    <dt>Motorista</dt>
+    <dd>
+      <% if (motorista) { %>
+        <%= motorista.nome %> · <%= motorista.cpf %>
+      <% } else { %>
+        Não atribuído
+      <% } %>
+    </dd>
+  </div>
+</dl>
+
+<section class="acoes">
+  <h2>Ações</h2>
+
+  <% if (entrega.status === 'CRIADA' || entrega.status === 'EM_TRANSITO') { %>
+    <form method="POST" action="/entregas/<%= entrega.id %>/avancar?_method=PATCH">
+      <input type="hidden" name="_method" value="PATCH">
+      <button class="botao botao-primario" type="submit">Avançar status</button>
+    </form>
+  <% } %>
+
+  <% if (entrega.status !== 'ENTREGUE' && entrega.status !== 'CANCELADA') { %>
+    <form method="POST" action="/entregas/<%= entrega.id %>/cancelar?_method=PATCH">
+      <input type="hidden" name="_method" value="PATCH">
+      <button class="botao botao-perigo" type="submit">Cancelar entrega</button>
+    </form>
+  <% } %>
+
+  <% if (entrega.status === 'CRIADA') { %>
+    <form class="form-atribuir" method="POST" action="/entregas/<%= entrega.id %>/atribuir?_method=PATCH">
+      <input type="hidden" name="_method" value="PATCH">
+      <label for="motoristaId">Atribuir motorista</label>
+      <select id="motoristaId" name="motoristaId" required>
+        <option value="">Selecione</option>
+        <% motoristas.forEach(function (opcao) { %>
+          <option value="<%= opcao.id %>" <%= entrega.motoristaId === opcao.id ? 'selected' : '' %>><%= opcao.nome %></option>
+        <% }) %>
+      </select>
+      <button class="botao" type="submit">Atribuir</button>
+    </form>
+  <% } %>
+</section>
+
+<section class="historico">
+  <h2>Histórico</h2>
+  <% if (entrega.historico.length) { %>
+    <ul class="historico-lista">
+      <% entrega.historico.forEach(function (evento) { %>
+        <li>
+          <time datetime="<%= evento.data %>"><%= formatarData(evento.data) %></time>
+          <span><%= evento.descricao %></span>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p class="vazio">Nenhum evento registrado.</p>
+  <% } %>
+</section>
